@@ -1,37 +1,54 @@
 package com.reviewerwriter.entities
 
-import com.reviewerwriter.Role
-import com.reviewerwriter.UserTagListConverter
-import com.reviewerwriter.models.Criteria
-import com.reviewerwriter.models.UserTag
-import com.reviewerwriter.models.UserTags
 import jakarta.persistence.*
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
 
 @Entity
-@Table(name = "Users")
-data class UserEntity (
+@Table(name = "users")
+data class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    val id: Int = 0,
+    val id: Int,
 
-    @Column(name = "username", length = 15)
-    val username: String,
+    @Column(name = "username")
+    val username : String,
 
-    @Column(name = "subsN")
-    val subsN: Int = 0,
+    @Column(name = "password")
+    val password : String,
 
-    @Column(name = "tags")
-    @Convert(converter = UserTagListConverter::class)
-    var userTags: UserTags = UserTags(),
-
-
-) {
-    fun addTag(tagName: String, criteria: List<String>) {
-        val list : ArrayList<Criteria> = ArrayList()
-        for (criteriaName in criteria) {
-            list.add(Criteria(criteriaName))
-        }
-        userTags.tags.add(UserTag(name = tagName, criteria = list))
+    @OneToOne
+    val accountEntity: AccountEntity
+) : UserDetails {
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
+        //ЗАГЛУШКА ДЛЯ РОЛЕЙ ХЗ ДЕЛАТЬ ИЛИ НЕТ Я ЕБАЛ ЭТО ГАВНО )))
+        return MutableList(1) { a: Int -> SimpleGrantedAuthority("USER$a") }
     }
+
+    override fun getPassword(): String {
+        return password
+    }
+
+    override fun getUsername(): String {
+        return username
+    }
+
+    override fun isAccountNonExpired(): Boolean {
+        return true
+    }
+
+    override fun isAccountNonLocked(): Boolean {
+        return true
+    }
+
+    override fun isCredentialsNonExpired(): Boolean {
+        return true
+    }
+
+    override fun isEnabled(): Boolean {
+        return true
+    }
+
 }

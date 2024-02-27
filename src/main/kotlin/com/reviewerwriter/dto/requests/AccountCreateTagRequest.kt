@@ -1,7 +1,7 @@
 package com.reviewerwriter.dto.requests
 
-data class UserCreateTagRequest(
-    val userId: Int,
+data class AccountCreateTagRequest(
+    val accountId: Int,
     val tagName: String,
     val criteria: String
 )
