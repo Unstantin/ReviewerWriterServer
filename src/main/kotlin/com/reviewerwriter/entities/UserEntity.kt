@@ -7,20 +7,20 @@ import org.springframework.security.core.userdetails.UserDetails
 
 @Entity
 @Table(name = "users")
-data class UserEntity(
+class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    val id: Int,
+    private var id: Int? = null,
 
     @Column(name = "username")
-    val username : String,
+    private var username : String,
 
     @Column(name = "password")
-    val password : String,
+    private var password : String,
 
     @OneToOne
-    val accountEntity: AccountEntity
+    var accountEntity: AccountEntity
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         //ЗАГЛУШКА ДЛЯ РОЛЕЙ ХЗ ДЕЛАТЬ ИЛИ НЕТ Я ЕБАЛ ЭТО ГАВНО )))

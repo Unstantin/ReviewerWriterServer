@@ -3,14 +3,35 @@ package com.reviewerwriter.services
 import com.reviewerwriter.dto.requests.AccountCreateTagRequest
 import com.reviewerwriter.dto.response.AccountInfo
 import com.reviewerwriter.entities.AccountEntity
+import com.reviewerwriter.entities.UserEntity
 import com.reviewerwriter.repositories.AccountRepository
+import com.reviewerwriter.repositories.UserRepository
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
-class AccountService(private val accountRepository: AccountRepository) {
+class AccountService(
+        val accountRepository: AccountRepository,
+        val userRepository: UserRepository
+) {
     fun getAccountInfo(accountId: Int) : AccountInfo {
-        val user: AccountEntity = accountRepository.getReferenceById(accountId)
-        return AccountInfo(nickname = user.nickname, tags=user.accountTags)
+        val info = AccountInfo()
+
+        val auth = SecurityContextHolder.getContext().authentication
+        val userDetailsFromAuth: UserDetails = auth.principal as UserEntity
+        val userEntityFromAuth = userRepository.findByUsername(userDetailsFromAuth.username)
+        if(userEntityFromAuth.isPresent) {
+            if(userEntityFromAuth.get().accountEntity.id == accountId) {
+                info.errorInfo = "У ТЕБЯ НЕТ ДОСТУПА К ЭТОЙ ХУЙНЕ!!! ПОШЕЛ НАХУЙ!!!"
+                return info
+            }
+        }
+
+        val account: AccountEntity = accountRepository.getReferenceById(accountId)
+        info.nickname = account.nickname
+        info.tags = account.accountTags
+        return info
     }
 
     fun createTag(userCreateTagRequest: AccountCreateTagRequest) {

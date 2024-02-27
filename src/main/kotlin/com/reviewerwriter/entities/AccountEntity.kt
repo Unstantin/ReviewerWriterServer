@@ -10,17 +10,17 @@ class AccountEntity (
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    val id: Int,
+    var id: Int = 0,
 
     @Column(name = "nickname", length = 15)
-    val nickname: String,
+    var nickname: String = "",
 
     @Column(name = "subs_n")
-    val subsN: Int,
+    var subsN: Int = 0,
 
     @Column(name = "tags")
     @Convert(converter = AccountTagsConverter::class)
-    val accountTags: AccountTags
+    var accountTags: AccountTags = AccountTags()
 ) {
     fun addTag(tagName: String, criteria: List<String>) {
         val list : ArrayList<Criteria> = ArrayList()

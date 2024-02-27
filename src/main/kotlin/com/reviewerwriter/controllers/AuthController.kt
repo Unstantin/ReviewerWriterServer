@@ -2,6 +2,7 @@ package com.reviewerwriter.controllers
 
 import com.reviewerwriter.dto.UserDTO
 import com.reviewerwriter.dto.response.Info
+import com.reviewerwriter.dto.response.JwtInfo
 import com.reviewerwriter.services.AuthService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,7 +18,7 @@ class AuthController(val authService: AuthService) {
     }
 
     @PostMapping("/log")
-    fun logIn(@RequestBody request: UserDTO): Info {
+    fun logIn(@RequestBody request: UserDTO): JwtInfo {
         return authService.logIn(request)
     }
 }
