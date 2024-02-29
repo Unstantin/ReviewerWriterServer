@@ -21,11 +21,15 @@ class AccountService(
         val auth = SecurityContextHolder.getContext().authentication
         val userDetailsFromAuth: UserDetails = auth.principal as UserEntity
         val userEntityFromAuth = userRepository.findByUsername(userDetailsFromAuth.username)
+
         if(userEntityFromAuth.isPresent) {
-            if(userEntityFromAuth.get().accountEntity.id == accountId) {
-                info.errorInfo = "У ТЕБЯ НЕТ ДОСТУПА К ЭТОЙ ХУЙНЕ!!! ПОШЕЛ НАХУЙ!!!"
+            if(userEntityFromAuth.get().accountEntity.id != accountId) {
+                info.errorInfo = "У Вас нет доступа к этой странице"
                 return info
             }
+        } else {
+            info.errorInfo = "Пользователь из аунтификации не найден"
+            return info
         }
 
         val account: AccountEntity = accountRepository.getReferenceById(accountId)

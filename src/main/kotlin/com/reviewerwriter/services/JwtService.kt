@@ -20,15 +20,12 @@ class JwtService(
     val lifetime: Int
 ) {
     fun extractLogin(jwt: String): String {
-        return try {
-            Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(jwt)
-                .body
-                .subject
-        } catch (e: ExpiredJwtException) {
-            return ""
-        }
+        return Jwts.parser()
+            .setSigningKey(secret)
+            .parseClaimsJws(jwt)
+            .body
+            .subject
+
     }
 
     fun generateToken(authentication: Authentication): String? {

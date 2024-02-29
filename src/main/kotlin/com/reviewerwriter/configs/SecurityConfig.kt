@@ -23,15 +23,14 @@ class SecurityConfig(
         http.sessionManagement {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         }
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
         http.authorizeHttpRequests {
             req -> (
                     req
-                        .requestMatchers("/auth").permitAll()
-                        .requestMatchers("/account").authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .anyRequest().fullyAuthenticated()
                     )
         }
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
     }
 }

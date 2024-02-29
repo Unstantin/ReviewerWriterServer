@@ -21,6 +21,7 @@ class JwtFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+
         if (request.servletPath.contains("/auth")) {
             filterChain.doFilter(request, response)
             return

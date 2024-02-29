@@ -9,8 +9,6 @@ import com.reviewerwriter.repositories.AccountRepository
 import com.reviewerwriter.repositories.UserRepository
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -19,14 +17,13 @@ class AuthService(
         val accountRepository: AccountRepository,
         val userRepository: UserRepository,
         val authenticationManager: AuthenticationManager,
-        val userDetailsService: UserDetailsService,
         val jwtService: JwtService,
         val encoder: BCryptPasswordEncoder) {
     fun registration(request: UserDTO): Info {
         val info = Info()
 
         if(!userRepository.findByUsername(request.username).isEmpty) {
-            info.errorInfo = "User with this username is already exist"
+            info.errorInfo = "Это имя пользователя уже занято"
             return info
         }
 
@@ -46,25 +43,20 @@ class AuthService(
     fun logIn(request: UserDTO): JwtInfo {
         val info = JwtInfo()
 
-        var auth = authenticationManager.authenticate(
+        val auth = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(
                 request.username,
                 request.password
             )
         )
-
-        val user = userDetailsService.loadUserByUsername(request.username)
-        val accessToken = createAccessToken(auth)
-
-        if(accessToken.isNullOrEmpty()) {
-            info.errorInfo = "ОШИБКА БЛЯТЬ"
+        val token = jwtService.generateToken(auth)
+        if(token.isNullOrEmpty()) {
+            info.errorInfo = "Ошибка при создании токена"
+            return info
         } else {
-            info.token = accessToken
+            info.token = token
         }
 
         return info;
     }
-
-    private fun createAccessToken(auth: Authentication) = jwtService.generateToken(auth)
-
 }
