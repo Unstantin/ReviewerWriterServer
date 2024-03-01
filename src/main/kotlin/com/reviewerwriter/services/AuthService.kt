@@ -1,6 +1,7 @@
 package com.reviewerwriter.services
 
 import com.reviewerwriter.dto.UserDTO
+import com.reviewerwriter.dto.response.AccountInfo
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.JwtInfo
 import com.reviewerwriter.entities.UserEntity
@@ -9,6 +10,8 @@ import com.reviewerwriter.repositories.AccountRepository
 import com.reviewerwriter.repositories.UserRepository
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -33,7 +36,7 @@ class AuthService(
         val user = UserEntity(
             username = request.username,
             password = encoder.encode(request.password),
-            accountEntity = account
+            account = account
         )
         userRepository.save(user)
 

@@ -20,7 +20,7 @@ class UserEntity(
     private var password : String,
 
     @OneToOne
-    var accountEntity: AccountEntity
+    var account: AccountEntity
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         //ЗАГЛУШКА ДЛЯ РОЛЕЙ ХЗ ДЕЛАТЬ ИЛИ НЕТ Я ЕБАЛ ЭТО ГАВНО )))

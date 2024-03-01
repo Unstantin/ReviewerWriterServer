@@ -1,8 +1,8 @@
 package com.reviewerwriter.dto.response
 
-import com.reviewerwriter.models.AccountTags
+import com.reviewerwriter.models.ListTags
 
 class AccountInfo(
     var nickname: String = "",
-    var tags: AccountTags? = null
+    var tags: ListTags? = null
 ) : Info()
