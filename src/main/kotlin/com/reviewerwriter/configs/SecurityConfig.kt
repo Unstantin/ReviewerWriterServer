@@ -26,7 +26,10 @@ class SecurityConfig(
         http.authorizeHttpRequests {
             req -> (
                     req
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/v1/auth/**").permitAll()
+                        .requestMatchers("/api-docs").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
                         .anyRequest().fullyAuthenticated()
                     )
         }
