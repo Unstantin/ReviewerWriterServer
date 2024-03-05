@@ -3,7 +3,7 @@ package com.reviewerwriter.services
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.entities.ReviewEntity
-import com.reviewerwriter.models.ListTags
+import com.reviewerwriter.models.Tag
 import com.reviewerwriter.repositories.AccountRepository
 import com.reviewerwriter.repositories.ReviewRepository
 import org.springframework.stereotype.Service
@@ -22,14 +22,12 @@ class ReviewService(
             return info
         }
 
-        val listTags = ListTags()
-        listTags.tags = request.tags as ArrayList
         val review = ReviewEntity(
             author = accountRepository.getReferenceById(request.authorId),
             title = request.title,
             mainText = request.mainText,
             shortText = request.shortText,
-            tags = listTags
+            tags = request.tags
         )
         reviewRepository.save(review)
 

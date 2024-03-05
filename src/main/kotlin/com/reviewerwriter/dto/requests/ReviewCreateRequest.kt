@@ -7,6 +7,6 @@ data class ReviewCreateRequest(
     val title: String,
     val mainText: String,
     val shortText: String,
-    val tags: List<Tag>
+    val tags: ArrayList<Tag>
 ) {
 }

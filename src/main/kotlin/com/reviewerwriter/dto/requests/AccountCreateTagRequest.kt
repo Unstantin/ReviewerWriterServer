@@ -1,7 +1,8 @@
 package com.reviewerwriter.dto.requests
 
+import com.reviewerwriter.models.Criteria
+
 data class AccountCreateTagRequest(
-    val accountId: Int,
     val tagName: String,
-    val criteria: String
+    val criteria: ArrayList<Criteria>
 )
