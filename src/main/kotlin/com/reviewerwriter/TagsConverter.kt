@@ -1,22 +1,21 @@
 package com.reviewerwriter
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.reviewerwriter.models.Tag
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 
 @Converter
 class TagsConverter : AttributeConverter<ArrayList<Tag>, String> {
-    private val objectMapper : ObjectMapper = ObjectMapper()
+    private val gson = Gson()
 
     override fun convertToDatabaseColumn(attribute: ArrayList<Tag>?): String {
-        return objectMapper.writeValueAsString(attribute)
+        return gson.toJson(attribute)
     }
 
     override fun convertToEntityAttribute(dbData: String?): ArrayList<Tag> {
-        val containerClass: Class<*> = ArrayList::class.java
-        val elementType: Class<*> = Tag::class.java
-        val javaType = objectMapper.typeFactory.constructParametricType(containerClass, elementType)
-        return objectMapper.readValue(dbData?.toByteArray(), javaType)
+        val typeToken = object : TypeToken<ArrayList<Tag>>() {}.type
+        return gson.fromJson(dbData, typeToken)
     }
 }

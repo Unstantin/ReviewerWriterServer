@@ -1,8 +1,11 @@
 package com.reviewerwriter.entities
 
+import com.google.gson.annotations.SerializedName
 import com.reviewerwriter.TagsConverter
 import com.reviewerwriter.models.Tag
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "reviews")
@@ -27,7 +30,9 @@ class ReviewEntity(
     @Column(name = "short_text")
     var shortText: String = "",
 
-    @Column(name = "tags")
     @Convert(converter = TagsConverter::class)
+    @Column(columnDefinition = "jsonb")
+    @SerializedName("tags")
+    @JdbcTypeCode(SqlTypes.JSON)
     var tags: ArrayList<Tag> = ArrayList()
 )

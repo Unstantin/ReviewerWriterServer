@@ -1,8 +1,11 @@
 package com.reviewerwriter.entities
 
+import com.google.gson.annotations.SerializedName
 import com.reviewerwriter.TagsConverter
 import com.reviewerwriter.models.*
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "accounts")
@@ -18,8 +21,10 @@ class AccountEntity (
     @Column(name = "subs_n")
     var subsN: Int = 0,
 
-    @Column(name = "tags")
     @Convert(converter = TagsConverter::class)
+    @Column(columnDefinition = "jsonb")
+    @SerializedName("tags")
+    @JdbcTypeCode(SqlTypes.JSON)
     var tags : ArrayList<Tag> = ArrayList()
 ) {
 }

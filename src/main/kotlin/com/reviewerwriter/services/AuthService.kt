@@ -1,7 +1,7 @@
 package com.reviewerwriter.services
 
+import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.UserDTO
-import com.reviewerwriter.dto.response.AccountInfo
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.JwtInfo
 import com.reviewerwriter.entities.UserEntity
@@ -10,8 +10,6 @@ import com.reviewerwriter.repositories.AccountRepository
 import com.reviewerwriter.repositories.UserRepository
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -26,7 +24,7 @@ class AuthService(
         val info = Info()
 
         if(!userRepository.findByUsername(request.username).isEmpty) {
-            info.errorInfo = "Это имя пользователя уже занято"
+            info.errorInfo = ErrorMessages.USERNAME_IS_ALREADY_TAKEN
             return info
         }
 
@@ -43,8 +41,9 @@ class AuthService(
         return info
     }
 
-    fun logIn(request: UserDTO): JwtInfo {
-        val info = JwtInfo()
+    fun logIn(request: UserDTO): Info {
+        val info = Info()
+        val jwtInfo = JwtInfo()
 
         val auth = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(
@@ -54,12 +53,13 @@ class AuthService(
         )
         val token = jwtService.generateToken(auth)
         if(token.isNullOrEmpty()) {
-            info.errorInfo = "Ошибка при создании токена"
+            info.errorInfo = ErrorMessages.ERROR_CREATING_TOKEN
             return info
         } else {
-            info.token = token
+            jwtInfo.token = token
+            info.response = jwtInfo
         }
 
-        return info;
+        return info
     }
 }

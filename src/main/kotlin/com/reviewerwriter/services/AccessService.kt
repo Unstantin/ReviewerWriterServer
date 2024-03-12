@@ -1,6 +1,6 @@
 package com.reviewerwriter.services
 
-import com.reviewerwriter.dto.response.AccountInfo
+import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.entities.UserEntity
 import com.reviewerwriter.repositories.UserRepository
@@ -20,11 +20,11 @@ class AccessService(
 
         if(userEntityFromAuth.isPresent) {
             if(userEntityFromAuth.get().account.id != accountId) {
-                info.errorInfo = "У Вас нет доступа к этой странице"
+                info.errorInfo = ErrorMessages.ACCESS_IS_DENIED
                 return info
             }
         } else {
-            info.errorInfo = "Пользователь из аунтификации не найден"
+            info.errorInfo = ErrorMessages.USER_FROM_TOKEN_NOT_FOUND
             return info
         }
 
