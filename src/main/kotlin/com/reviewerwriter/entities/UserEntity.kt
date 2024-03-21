@@ -11,7 +11,7 @@ class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    private var id: Int? = null,
+    var id: Int? = null,
 
     @Column(name = "username")
     private var username : String,

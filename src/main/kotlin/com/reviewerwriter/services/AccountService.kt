@@ -17,7 +17,7 @@ class AccountService(
         val accessService: AccessService
 ) {
 
-    fun getAccountInfo(accountId: Int) : Info {
+    fun getPrivateAccountInfo(accountId: Int) : Info {
         val info = Info()
         val accountInfo = AccountInfo()
 

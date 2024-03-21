@@ -24,7 +24,7 @@ class AuthController(val authService: AuthService) {
     }
 
 
-    @Operation(summary = "Получение информации о пользователе")
+    @Operation(summary = "Получение jwt токена")
     @PostMapping("/log")
     fun logIn(@RequestBody request: UserDTO): ResponseEntity<Any> {
         val res = authService.logIn(request)
