@@ -7,29 +7,28 @@ import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.entities.AccountEntity
 import com.reviewerwriter.models.Tag
 import com.reviewerwriter.repositories.AccountRepository
+import io.jsonwebtoken.Claims
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Field
 
 @Service
 class AccountService(
-        val accountRepository: AccountRepository,
-        val accessService: AccessService
+        val accountRepository: AccountRepository
 ) {
 
-    fun getPrivateAccountInfo(accountId: Int) : Info {
+    fun getPrivateAccountInfo() : Info {
         val info = Info()
         val accountInfo = AccountInfo()
 
-        val accountOptional = accountRepository.findById(accountId)
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
         val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
         } else {
             account = accountOptional.get()
-
-            info.errorInfo = accessService.checkAccessToAccount(account.id!!).errorInfo
-            if(info.errorInfo != null) return info
 
             accountInfo.nickname = account.nickname
             accountInfo.tags = account.tags
@@ -40,18 +39,16 @@ class AccountService(
     }
 
 
-    fun createAccountTag(accountId: Int, request: AccountCreateTagRequest) : Info {
+    fun createAccountTag(request: AccountCreateTagRequest) : Info {
         val info = Info()
 
-        val accountOptional = accountRepository.findById(accountId)
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
         val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
         } else {
             account = accountOptional.get()
-
-            info.errorInfo = accessService.checkAccessToAccount(account.id!!).errorInfo
-            if(info.errorInfo != null) return info
 
             account.tags.add(Tag(request.tagName, request.criteria))
             accountRepository.save(account)
@@ -61,18 +58,16 @@ class AccountService(
     }
 
 
-    fun updateAccountInfo(accountId: Int, fields: Map<String, Any>): Info {
+    fun updateAccountInfo(fields: Map<String, Any>): Info {
         val info = Info()
 
-        val accountOptional = accountRepository.findById(accountId)
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
         val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
         } else {
             account = accountOptional.get()
-
-            info.errorInfo = accessService.checkAccessToAccount(account.id!!).errorInfo
-            if(info.errorInfo != null) return info
 
             fields.forEach { (key, value) ->
                 run {

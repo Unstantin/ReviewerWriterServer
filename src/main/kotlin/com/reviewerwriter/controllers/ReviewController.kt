@@ -1,8 +1,14 @@
 package com.reviewerwriter.controllers
 
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
+import com.reviewerwriter.dto.response.AccountInfo
+import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.services.ReviewService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -19,6 +25,10 @@ class ReviewController(
 ) {
     @Operation(summary = "Создание рецензии на аккаунте")
     @PostMapping
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "404", description = "Аккаунт из токена не найден"),
+        ApiResponse(responseCode = "200", description = "ОК")
+    ])
     fun createReview(@RequestBody request: ReviewCreateRequest): ResponseEntity<Any> {
         val res = reviewService.createReview(request)
         return if(res.errorInfo != null) {
@@ -30,6 +40,12 @@ class ReviewController(
 
     @Operation(summary = "Получение информации об рецензии")
     @GetMapping("/{id}")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "404", description = "Рецензия не найдена"),
+        ApiResponse(responseCode = "200", description = "ОК",
+            content = [ Content( schema = Schema(implementation = ReviewInfo::class) ) ]
+        )]
+    )
     fun getReviewInfo(@PathVariable id: Int): ResponseEntity<Any> {
         val res = reviewService.getReviewInfo(id)
         return if(res.errorInfo != null) {

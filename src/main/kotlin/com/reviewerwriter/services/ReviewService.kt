@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class ReviewService(
     val reviewRepository: ReviewRepository,
-    val userRepository: UserRepository,
-    val accessService: AccessService
+    val userRepository: UserRepository
 ) {
     fun createReview(request: ReviewCreateRequest): Info {
         val info = Info()
@@ -30,10 +29,6 @@ class ReviewService(
             return info
         } else {
             account = userOptional.get().account
-
-            info.errorInfo = accessService.checkAccessToAccount(account.id!!).errorInfo
-            if(info.errorInfo != null) return info
-
 
             val review = ReviewEntity(
                 author = account,
