@@ -43,13 +43,14 @@ class ReviewService(
         return info
     }
 
-    fun getReviewInfo(id: Int) : Info {
+    fun getReviewInfoById(id: Int) : Info {
         val info = Info()
         val reviewInfo = ReviewInfo()
 
         val reviewOptional = reviewRepository.findById(id)
         if(reviewOptional.isPresent) {
             val review = reviewOptional.get()
+            reviewInfo.id = review.id
             reviewInfo.likesN = review.likesN
             reviewInfo.title = review.title
             reviewInfo.authorNickname = review.author.nickname

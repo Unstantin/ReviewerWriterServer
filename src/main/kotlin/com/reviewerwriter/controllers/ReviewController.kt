@@ -1,7 +1,6 @@
 package com.reviewerwriter.controllers
 
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
-import com.reviewerwriter.dto.response.AccountInfo
 import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.services.ReviewService
 import io.swagger.v3.oas.annotations.Operation
@@ -47,7 +46,7 @@ class ReviewController(
         )]
     )
     fun getReviewInfo(@PathVariable id: Int): ResponseEntity<Any> {
-        val res = reviewService.getReviewInfo(id)
+        val res = reviewService.getReviewInfoById(id)
         return if(res.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(res.errorInfo!!.code)).body(res.errorInfo)
         } else {

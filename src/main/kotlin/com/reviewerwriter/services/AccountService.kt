@@ -4,9 +4,11 @@ import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.requests.AccountCreateTagRequest
 import com.reviewerwriter.dto.response.AccountInfo
 import com.reviewerwriter.dto.response.Info
+import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.entities.AccountEntity
 import com.reviewerwriter.models.Tag
 import com.reviewerwriter.repositories.AccountRepository
+import com.reviewerwriter.repositories.ReviewRepository
 import io.jsonwebtoken.Claims
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -15,7 +17,8 @@ import java.lang.reflect.Field
 
 @Service
 class AccountService(
-        val accountRepository: AccountRepository
+        val accountRepository: AccountRepository,
+        val reviewRepository: ReviewRepository
 ) {
 
     fun getPrivateAccountInfo() : Info {
@@ -78,6 +81,37 @@ class AccountService(
             }
 
             accountRepository.save(account)
+        }
+
+        return info
+    }
+
+    fun getAllAccountReviews(): Info {
+        val info = Info()
+
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
+        val account: AccountEntity
+        if(!accountOptional.isPresent) {
+            info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
+        } else {
+            account = accountOptional.get()
+            val listReviews = reviewRepository.findAllByAuthorId(account.id!!)
+            val listReviewsInfo = ArrayList<ReviewInfo>()
+            listReviews.forEach {
+                listReviewsInfo.add(
+                    ReviewInfo(
+                        id = it.id,
+                        title = it.title,
+                        mainText = it.mainText,
+                        shortText = it.shortText,
+                        authorNickname = it.author.nickname,
+                        likesN = it.likesN
+                    )
+                )
+            }
+
+            info.response = listReviewsInfo
         }
 
         return info

@@ -2,8 +2,8 @@ package com.reviewerwriter.controllers
 
 import com.reviewerwriter.dto.requests.AccountCreateTagRequest
 import com.reviewerwriter.dto.response.AccountInfo
+import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.services.AccountService
-import com.reviewerwriter.services.JwtService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -66,4 +66,22 @@ class AccountController(val accountService: AccountService) {
             ResponseEntity.status(200).body("OK")
         }
     }
+
+    @Operation(summary = "Получение всех рецензий аккаунта")
+    @GetMapping("/reviews")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "404", description = "Аккаунт из токена не найден"),
+        ApiResponse(responseCode = "200", description = "OK", content = [
+            Content(schema = Schema(implementation = Array<ReviewInfo>::class))
+        ])
+    ])
+    fun getAllAccountReviews() : ResponseEntity<Any> {
+        val res = accountService.getAllAccountReviews()
+        return if(res.errorInfo != null) {
+            ResponseEntity.status(res.errorInfo!!.code).body(res.errorInfo)
+        } else {
+            ResponseEntity.status(200).body(res.response)
+        }
+    }
+
 }
