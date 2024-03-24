@@ -25,7 +25,7 @@ class ReviewController(
     @Operation(summary = "Создание рецензии на аккаунте")
     @PostMapping
     @ApiResponses(value = [
-        ApiResponse(responseCode = "404", description = "Аккаунт из токена не найден"),
+        ApiResponse(responseCode = "401", description = "Некорректный токен"),
         ApiResponse(responseCode = "200", description = "ОК")
     ])
     fun createReview(@RequestBody request: ReviewCreateRequest): ResponseEntity<Any> {

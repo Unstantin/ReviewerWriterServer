@@ -25,7 +25,7 @@ class ReviewService(
         val userOptional = userRepository.findByUsername(userDetails.username)
         val account: AccountEntity
         if(!userOptional.isPresent) {
-            info.errorInfo = ErrorMessages.USER_FROM_TOKEN_NOT_FOUND
+            info.errorInfo = ErrorMessages.TOKEN_ERROR
             return info
         } else {
             account = userOptional.get().account

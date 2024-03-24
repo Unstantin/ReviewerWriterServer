@@ -25,6 +25,12 @@ class AccountEntity (
     @Column(columnDefinition = "jsonb")
     @SerializedName("tags")
     @JdbcTypeCode(SqlTypes.JSON)
-    var tags : ArrayList<Tag> = ArrayList()
+    var tags : ArrayList<Tag> = ArrayList(),
+
+    @OneToMany(mappedBy = "follower")
+    var followers: Set<FollowEntity>? = null,
+
+    @OneToMany(mappedBy = "following")
+    var following: Set<FollowEntity>? = null
 ) {
 }

@@ -24,7 +24,7 @@ class AccessService(
                 return info
             }
         } else {
-            info.errorInfo = ErrorMessages.USER_FROM_TOKEN_NOT_FOUND
+            info.errorInfo = ErrorMessages.TOKEN_ERROR
             return info
         }
 
