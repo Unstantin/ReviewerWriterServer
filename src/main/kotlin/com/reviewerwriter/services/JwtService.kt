@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.util.*
@@ -26,6 +27,11 @@ class JwtService(
             .body["username"] as String
     }
 
+    fun getUsernameFromToken() : String {
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        return claims["username"] as String
+    }
+
     fun generateToken(authentication: Authentication): String? {
         val user: UserEntity = authentication.principal as UserEntity
         val claims = mapOf(
@@ -35,7 +41,6 @@ class JwtService(
         )
 
         return Jwts.builder()
-            //.setSubject(user.username)
             .setClaims(claims)
             .setIssuedAt(Date())
             .setExpiration(Date(Date().time + lifetime))

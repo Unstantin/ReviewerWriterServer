@@ -45,26 +45,6 @@ class AccountService(
         return info
     }
 
-/*
-    fun createAccountTag(request: AccountCreateTagRequest) : Info {
-        val info = Info()
-
-        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
-        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
-        val account: AccountEntity
-        if(!accountOptional.isPresent) {
-            info.errorInfo = ErrorMessages.TOKEN_ERROR
-        } else {
-            account = accountOptional.get()
-
-            account.tags.add(Tag(request.tagName, request.criteria))
-            accountRepository.save(account)
-        }
-
-        return info
-    }
-*/
-
     fun updateAccountInfo(fields: Map<String, Any>): Info {
         val info = Info()
 
