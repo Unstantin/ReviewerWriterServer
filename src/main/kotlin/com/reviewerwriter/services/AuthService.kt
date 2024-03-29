@@ -4,6 +4,7 @@ import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.UserDTO
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.JwtInfo
+import com.reviewerwriter.dto.response.RegistrationInfo
 import com.reviewerwriter.entities.UserEntity
 import com.reviewerwriter.entities.AccountEntity
 import com.reviewerwriter.repositories.AccountRepository
@@ -37,6 +38,8 @@ class AuthService(
             account = account
         )
         userRepository.save(user)
+
+        info.response = RegistrationInfo(user.account.id)
 
         return info
     }

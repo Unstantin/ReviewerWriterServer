@@ -1,6 +1,8 @@
 package com.reviewerwriter.controllers
 
+import com.reviewerwriter.*
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
+import com.reviewerwriter.dto.response.ReviewCreateResponse
 import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.services.JwtService
 import com.reviewerwriter.services.LogService
@@ -14,11 +16,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.*
 import java.net.URL
 import java.time.LocalDateTime
 
@@ -32,8 +30,9 @@ class ReviewController(
     @Operation(summary = "Создание рецензии на аккаунте")
     @PostMapping
     @ApiResponses(value = [
-        ApiResponse(responseCode = "401", description = "Некорректный токен"),
-        ApiResponse(responseCode = "200", description = "ОК")
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content( schema = Schema(implementation = ReviewCreateResponse::class)) ])
     ])
     fun createReview(@RequestBody request: ReviewCreateRequest, servlet: HttpServletRequest): ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
@@ -41,10 +40,10 @@ class ReviewController(
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {
-            ResponseEntity.status(HttpStatusCode.valueOf(200)).body("OK")
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
         }
 
-        logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+        logService.createLog(requestDateTime=requestDateTime, request, response, jwtService.getUsernameFromToken(),
             method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
         return response
     }
@@ -52,18 +51,61 @@ class ReviewController(
     @Operation(summary = "Получение информации об рецензии")
     @GetMapping("/{id}")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "404", description = "Рецензия не найдена"),
-        ApiResponse(responseCode = "200", description = "ОК",
-            content = [ Content( schema = Schema(implementation = ReviewInfo::class) ) ]
-        )]
-    )
+        ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content( schema = Schema(implementation = ReviewInfo::class)) ])
+    ])
     fun getReviewInfo(@PathVariable id: Int, servlet: HttpServletRequest): ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
-        val res = reviewService.getReviewInfoById(id)
-        val response: ResponseEntity<Any> = if(res.errorInfo != null) {
-            ResponseEntity.status(HttpStatusCode.valueOf(res.errorInfo!!.code)).body(res.errorInfo)
+        val result = reviewService.getReviewInfoById(id)
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {
-            ResponseEntity.status(HttpStatusCode.valueOf(200)).body(res.response)
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Редактирование информации в рецензии", description = "Доступные поля: title, mainText, shortText, tags")
+    @PatchMapping("/{id}")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = ACCESS_IS_DENIED_code, description = ACCESS_IS_DENIED_message),
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
+        ApiResponse(responseCode = OK_code, description = OK_message)]
+    )
+    fun updateReviewInfo(@PathVariable id: Int, @RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = reviewService.updateReviewInfo(id, fields)
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(OK_message)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, fields, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Удаление рецензии")
+    @DeleteMapping("/{id}")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = ACCESS_IS_DENIED_code, description = ACCESS_IS_DENIED_message),
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
+        ApiResponse(responseCode = OK_code, description = OK_message)]
+    )
+    fun deleteReview(@PathVariable id: Int, servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = reviewService.deleteReview(id)
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
         }
 
         logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),

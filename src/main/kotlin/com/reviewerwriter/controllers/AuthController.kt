@@ -1,7 +1,9 @@
 package com.reviewerwriter.controllers
 
+import com.reviewerwriter.*
 import com.reviewerwriter.dto.UserDTO
 import com.reviewerwriter.dto.response.JwtInfo
+import com.reviewerwriter.dto.response.RegistrationInfo
 import com.reviewerwriter.services.AuthService
 import com.reviewerwriter.services.LogService
 import io.swagger.v3.oas.annotations.Operation
@@ -24,8 +26,9 @@ class AuthController(val authService: AuthService, val logService: LogService) {
     @Operation(summary = "Регистрация пользователя")
     @PostMapping("/reg")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "400", description = "Это имя пользователя уже занято"),
-        ApiResponse(responseCode = "200", description = "ОК")
+        ApiResponse(responseCode = USERNAME_IS_ALREADY_TAKEN_code, description = USERNAME_IS_ALREADY_TAKEN_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [Content(schema = Schema(implementation = RegistrationInfo::class)) ])
     ])
     fun registration(@RequestBody request: UserDTO, servlet: HttpServletRequest): ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
@@ -33,7 +36,7 @@ class AuthController(val authService: AuthService, val logService: LogService) {
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo!!.message)
         } else {
-            ResponseEntity.status(200).body("OK")
+            ResponseEntity.status(OK_code.toInt()).body(result.response)
         }
 
         logService.createLog(requestDateTime=requestDateTime, request, response, request.username,
@@ -45,9 +48,9 @@ class AuthController(val authService: AuthService, val logService: LogService) {
     @Operation(summary = "Получение jwt токена")
     @PostMapping("/log")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "400", description = "Ошибка создания токена"),
-        ApiResponse(responseCode = "200", description = "ОК",
-            content = [ Content( schema = Schema(implementation = JwtInfo::class) ) ])
+        ApiResponse(responseCode = ERROR_CREATING_TOKEN_code, description = ERROR_CREATING_TOKEN_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [Content(schema = Schema(implementation = JwtInfo::class)) ])
     ])
     fun logIn(@RequestBody request: UserDTO, servlet: HttpServletRequest): ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
@@ -55,7 +58,7 @@ class AuthController(val authService: AuthService, val logService: LogService) {
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo!!.message)
         } else {
-            ResponseEntity.status(200).body(result.response)
+            ResponseEntity.status(OK_code.toInt()).body(result.response)
         }
 
         logService.createLog(requestDateTime=requestDateTime, request, response, request.username,

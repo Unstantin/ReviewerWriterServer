@@ -31,11 +31,10 @@ class AccountService(
 
         val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
         val accountOptional = accountRepository.findById(claims["accountId"] as Int)
-        val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.TOKEN_ERROR
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
 
             accountInfo.nickname = account.nickname
             accountInfo.tags = account.tags
@@ -50,11 +49,10 @@ class AccountService(
 
         val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
         val accountOptional = accountRepository.findById(claims["accountId"] as Int)
-        val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.TOKEN_ERROR
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
 
             fields.forEach { (key, value) ->
                 run {
@@ -75,11 +73,10 @@ class AccountService(
 
         val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
         val accountOptional = accountRepository.findById(claims["accountId"] as Int)
-        val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.TOKEN_ERROR
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
             val listReviews = reviewRepository.findAllByAuthorId(account.id!!)
             val listReviewsInfo = ArrayList<ReviewInfo>()
             listReviews.forEach {
@@ -90,7 +87,9 @@ class AccountService(
                         mainText = it.mainText,
                         shortText = it.shortText,
                         authorNickname = it.author.nickname,
-                        likesN = it.likesN
+                        date = it.date,
+                        likesN = it.likesN,
+                        tags = it.tags
                     )
                 )
             }
@@ -105,7 +104,6 @@ class AccountService(
         val info = Info()
 
         val accountOptional: Optional<AccountEntity>
-        val account: AccountEntity
         if(isMyAccount) { //если запрос на свой аккаунт, то пытаемся достать из токена
             val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
             accountOptional = accountRepository.findById(claims["accountId"] as Int)
@@ -120,7 +118,7 @@ class AccountService(
                 info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
             }
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
 
             val follow: List<AccountEntity?> = if(isFollowers) {
                 followRepository.findAllByFollowingId(account.id!!).stream().map { it.follower }.toList()
@@ -147,11 +145,10 @@ class AccountService(
         val info = Info()
 
         val accountOptional = accountRepository.findById(id)
-        val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
 
             info.response = AccountInfoPublic(
                 nickname = account.nickname
@@ -172,14 +169,17 @@ class AccountService(
             return info
         } else {
             myAccount = myAccountOptional.get()
+            if(myAccount.id == id) {
+                info.errorInfo = ErrorMessages.ATTEMPT_FOLLOW_YOURSELF
+                return info
+            }
         }
 
         val accountOptional = accountRepository.findById(id)
-        val account: AccountEntity
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.ACCOUNT_NOT_FOUND
         } else {
-            account = accountOptional.get()
+            val account = accountOptional.get()
 
             val follow = FollowEntity(
                 follower = myAccount,
