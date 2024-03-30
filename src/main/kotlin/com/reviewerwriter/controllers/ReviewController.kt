@@ -1,6 +1,7 @@
 package com.reviewerwriter.controllers
 
 import com.reviewerwriter.*
+import com.reviewerwriter.dto.requests.ActionToAnotherAccountReviewRequest
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
 import com.reviewerwriter.dto.response.ReviewCreateResponse
 import com.reviewerwriter.dto.response.ReviewInfo
@@ -109,6 +110,28 @@ class ReviewController(
         }
 
         logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Действие по отношению к чужой рецензии", description = "Доступные значения поля action: TO_LIKE, TO_FAVORITE")
+    @PostMapping("/{id}")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
+        ApiResponse(responseCode = OK_code, description = OK_message)]
+    )
+    fun actionToAnotherAccountReview(@PathVariable id: Int, @RequestBody request: ActionToAnotherAccountReviewRequest,
+                                        servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = reviewService.actionToReview(id, ActionToAnotherAccountReview.valueOf(request.action.uppercase()))
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, request, response, jwtService.getUsernameFromToken(),
             method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
         return response
     }

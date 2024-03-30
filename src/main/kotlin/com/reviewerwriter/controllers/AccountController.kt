@@ -4,7 +4,6 @@ import com.reviewerwriter.*
 import com.reviewerwriter.dto.requests.ActionToAnotherAccountRequest
 import com.reviewerwriter.dto.response.AccountInfoPrivate
 import com.reviewerwriter.dto.response.AccountInfoPublic
-import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.services.AccountService
 import com.reviewerwriter.services.JwtService
@@ -71,7 +70,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         return response
     }
 
-    @Operation(summary = "Получение всех рецензий аккаунта")
+    @Operation(summary = "Получение всех рецензий своего аккаунта")
     @GetMapping("/reviews")
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
@@ -81,6 +80,28 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     fun getAllAccountReviews(servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
         val result = accountService.getAllAccountReviews()
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(OK_code.toInt()).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Получение всех избранных рецензий")
+    @GetMapping("/reviews/favorites")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content(array = ArraySchema(schema= Schema(implementation = ReviewInfo::class))) ])
+    ])
+    fun getAllFavoriteReviews(servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = accountService.getAllFavoriteReviews()
+
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
         } else {
@@ -156,7 +177,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     }
 
 
-    @Operation(summary = "Действие по отношению к другому аккаунту", description = "Поле action может принимать два значения: TO_FOLLOW и TO_UNFOLLOW")
+    @Operation(summary = "Действие по отношению к другому аккаунту", description = "Поле action может принимать значения: TO_FOLLOW")
     @PostMapping("/{id}")
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
@@ -166,13 +187,9 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     ])
     fun makeActionToAnotherAccount(@PathVariable id: Int, @RequestBody request: ActionToAnotherAccountRequest, servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
+
         val result = when(ActionToAnotherAccount.valueOf(request.action.uppercase())) {
-            ActionToAnotherAccount.TO_FOLLOW -> {
-                accountService.followToAccount(id, mode=true)
-            }
-            ActionToAnotherAccount.TO_UNFOLLOW -> {
-                accountService.followToAccount(id, mode=false)
-            }
+            ActionToAnotherAccount.TO_FOLLOW -> accountService.followToAccount(id)
         }
 
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
@@ -186,7 +203,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         return response
     }
 
-    @Operation(summary = "Получение информации о подписчиках другого пользователя")
+    @Operation(summary = "Получение информации о подписчиках другого аккаунта")
     @GetMapping("/{id}/followers")
     @ApiResponses(value = [
         ApiResponse(responseCode = ACCOUNT_NOT_FOUND_code, description = ACCOUNT_NOT_FOUND_message),
@@ -195,7 +212,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     ])
     fun getAllFollowersOfAnotherAccount(@PathVariable id: Int, servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
-        val result = accountService.getAllFollow(isFollowers = true, isMyAccount = false, id = id)
+        val result = accountService.getAllFollow(isFollowers = true, isMyAccount = false, accountId = id)
 
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
@@ -208,7 +225,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         return response
     }
 
-    @Operation(summary = "Получение информации о подписчиках другого пользователя")
+    @Operation(summary = "Получение информации о подписчиках другого аккаунта")
     @GetMapping("/{id}/following")
     @ApiResponses(value = [
         ApiResponse(responseCode = ACCOUNT_NOT_FOUND_code, description = ACCOUNT_NOT_FOUND_message),
@@ -217,7 +234,29 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     ])
     fun getAllFollowingOfAnotherAccount(@PathVariable id: Int, servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
-        val result = accountService.getAllFollow(isFollowers = false, isMyAccount = false, id = id)
+        val result = accountService.getAllFollow(isFollowers = false, isMyAccount = false, accountId = id)
+
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(OK_code.toInt()).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Получение всех рецензий другого аккаунта")
+    @GetMapping("/{id}/reviews")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = ACCOUNT_NOT_FOUND_code, description = ACCOUNT_NOT_FOUND_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content(array = ArraySchema(schema= Schema(implementation = ReviewInfo::class))) ])
+    ])
+    fun getAllReviewsOfAnotherAccount(@PathVariable id: Int, servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = accountService.getAllAccountReviews(id, isMyAccount = false)
 
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)

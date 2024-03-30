@@ -18,19 +18,9 @@ class AccountEntity (
     @Column(name = "nickname", length = 15)
     var nickname: String = "",
 
-    @Column(name = "subs_n")
-    var subsN: Int = 0,
-
     @Convert(converter = TagsConverter::class)
     @Column(columnDefinition = "jsonb")
     @SerializedName("tags")
     @JdbcTypeCode(SqlTypes.JSON)
-    var tags : ArrayList<Tag> = ArrayList(),
-
-    @OneToMany(mappedBy = "follower")
-    var followers: Set<FollowEntity>? = null,
-
-    @OneToMany(mappedBy = "following")
-    var following: Set<FollowEntity>? = null
-) {
-}
+    var tags: ArrayList<Tag> = ArrayList()
+)

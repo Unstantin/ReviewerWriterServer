@@ -22,9 +22,6 @@ class ReviewEntity(
     @Column(name = "title")
     var title: String,
 
-    @Column(name = "likes_n")
-    var likesN: Int = 0,
-
     @Column(name = "main_text")
     var mainText: String,
 

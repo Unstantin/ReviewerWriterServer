@@ -7,9 +7,7 @@ import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.entities.AccountEntity
 import com.reviewerwriter.entities.FollowEntity
-import com.reviewerwriter.repositories.AccountRepository
-import com.reviewerwriter.repositories.FollowRepository
-import com.reviewerwriter.repositories.ReviewRepository
+import com.reviewerwriter.repositories.*
 import io.jsonwebtoken.Claims
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
@@ -22,7 +20,9 @@ import kotlin.collections.ArrayList
 class AccountService(
         val accountRepository: AccountRepository,
         val reviewRepository: ReviewRepository,
-        val followRepository: FollowRepository
+        val followRepository: FollowRepository,
+        val favoriteRepository: FavoriteRepository,
+        val likeRepository: LikeRepository
 ) {
 
     fun getAccountInfoPrivate() : Info {
@@ -68,11 +68,17 @@ class AccountService(
         return info
     }
 
-    fun getAllAccountReviews(): Info {
+    fun getAllAccountReviews(accountId: Int? = null, isMyAccount: Boolean = true): Info {
         val info = Info()
 
-        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
-        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
+        val accountOptional: Optional<AccountEntity>
+        if(isMyAccount) { //если запрос на свой аккаунт, то пытаемся достать из токена
+            val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+            accountOptional = accountRepository.findById(claims["accountId"] as Int)
+        } else {
+            accountOptional = accountRepository.findById(accountId!!)
+        }
+
         if(!accountOptional.isPresent) {
             info.errorInfo = ErrorMessages.TOKEN_ERROR
         } else {
@@ -88,8 +94,8 @@ class AccountService(
                         shortText = it.shortText,
                         authorNickname = it.author.nickname,
                         date = it.date,
-                        likesN = it.likesN,
-                        tags = it.tags
+                        tags = it.tags,
+                        likesN = likeRepository.findByReviewId(it.id!!).stream().count().toInt()
                     )
                 )
             }
@@ -100,7 +106,7 @@ class AccountService(
         return info
     }
 
-    fun getAllFollow(isFollowers : Boolean, isMyAccount: Boolean = true, id: Int? = null): Info {
+    fun getAllFollow(isFollowers : Boolean, isMyAccount: Boolean = true, accountId: Int? = null): Info {
         val info = Info()
 
         val accountOptional: Optional<AccountEntity>
@@ -108,7 +114,7 @@ class AccountService(
             val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
             accountOptional = accountRepository.findById(claims["accountId"] as Int)
         } else {
-            accountOptional = accountRepository.findById(id!!)
+            accountOptional = accountRepository.findById(accountId!!)
         }
 
         if(!accountOptional.isPresent) {
@@ -158,7 +164,7 @@ class AccountService(
         return info;
     }
 
-    fun followToAccount(id: Int, mode: Boolean): Info {
+    fun followToAccount(id: Int): Info {
         val info = Info()
 
         val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
@@ -181,18 +187,53 @@ class AccountService(
         } else {
             val account = accountOptional.get()
 
-            val follow = FollowEntity(
-                follower = myAccount,
-                following = account
-            )
-
-            if(mode) {
-                followRepository.save(follow)
+            val follow = followRepository.findByFollowerIdAndFollowingId(myAccount.id!!, account.id!!)
+            if(follow.isPresent) {
+                followRepository.delete(follow.get())
             } else {
-                followRepository.delete(followRepository.findByFollowerIdAndFollowingId(myAccount.id!!, account.id!!))
+                val newFollow = FollowEntity(
+                    follower = myAccount,
+                    following = account
+                )
+                followRepository.save(newFollow)
             }
         }
 
         return info;
+    }
+
+    fun getAllFavoriteReviews(): Info {
+        val info = Info()
+
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
+        if(!accountOptional.isPresent) {
+            info.errorInfo = ErrorMessages.TOKEN_ERROR
+        } else {
+            val account = accountOptional.get()
+
+            val listReviews = favoriteRepository.findAllByAccountId(account.id!!).stream().map { it.review }.toList()
+            val listReviewsInfo = ArrayList<ReviewInfo>()
+            listReviews.forEach {
+                if (it != null) {
+                    listReviewsInfo.add(
+                        ReviewInfo(
+                            id = it.id,
+                            title = it.title,
+                            mainText = it.mainText,
+                            shortText = it.shortText,
+                            authorNickname = it.author.nickname,
+                            date = it.date,
+                            tags = it.tags,
+                            likesN = likeRepository.findByReviewId(it.id!!).stream().count().toInt()
+                        )
+                    )
+                }
+            }
+
+            info.response = listReviewsInfo
+        }
+
+        return info
     }
 }
