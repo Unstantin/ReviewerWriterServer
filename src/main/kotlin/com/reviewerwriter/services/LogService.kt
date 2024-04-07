@@ -6,14 +6,13 @@ import com.reviewerwriter.repositories.LogRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.lang.reflect.Type
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
 class LogService(val logRepository: LogRepository) {
     var gson: Gson = GsonBuilder()
-        .registerTypeAdapter(LocalDate::class.java, LocalDateAdapter())
+        .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
         .create()
     fun createLog(requestDateTime: LocalDateTime, request: Any?, response: ResponseEntity<Any>, username: String, method: String, endpoint: String) {
         logRepository.save(
@@ -25,14 +24,14 @@ class LogService(val logRepository: LogRepository) {
     }
 }
 
-class LocalDateAdapter : JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+class LocalDateTimeAdapter : JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
 
-    override fun serialize(src: LocalDate, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+    override fun serialize(src: LocalDateTime, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
         return JsonPrimitive(src.format(formatter))
     }
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): LocalDate {
-        return LocalDate.parse(json.asString, formatter)
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): LocalDateTime {
+        return LocalDateTime.parse(json.asString, formatter)
     }
 }

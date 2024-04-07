@@ -29,8 +29,10 @@ class AuthService(
             return info
         }
 
-        val account = AccountEntity()
-        accountRepository.save(account)
+        var account = AccountEntity()
+        account = accountRepository.save(
+            accountRepository.save(account).apply { nickname = "id" + account.id }
+        )
 
         val user = UserEntity(
             username = request.username,

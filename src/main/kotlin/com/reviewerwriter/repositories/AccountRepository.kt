@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface AccountRepository : JpaRepository<AccountEntity, Int> {
+    fun findByNickname(nickname: String) : Optional<AccountEntity>
 }

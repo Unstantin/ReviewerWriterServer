@@ -13,6 +13,10 @@ enum class ErrorMessages(var message: String, val code: Int) {
     USERNAME_IS_ALREADY_TAKEN(
         USERNAME_IS_ALREADY_TAKEN_message,
         USERNAME_IS_ALREADY_TAKEN_code.toInt()),
+    NICKNAME_IS_ALREADY_TAKEN(
+        NICKNAME_IS_ALREADY_TAKEN_message,
+        NICKNAME_IS_ALREADY_TAKEN_code.toInt()
+    ),
     ERROR_CREATING_TOKEN(
         ERROR_CREATING_TOKEN_message,
         ERROR_CREATING_TOKEN_code.toInt()),

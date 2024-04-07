@@ -6,7 +6,7 @@ import com.reviewerwriter.models.Tag
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "reviews")
@@ -29,7 +29,7 @@ class ReviewEntity(
     var shortText: String = "",
 
     @Column(name = "date")
-    var date: LocalDate,
+    var date: LocalDateTime,
 
     @Convert(converter = TagsConverter::class)
     @Column(columnDefinition = "jsonb")

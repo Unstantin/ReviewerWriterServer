@@ -54,6 +54,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     @PatchMapping
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = NICKNAME_IS_ALREADY_TAKEN_code, description = NICKNAME_IS_ALREADY_TAKEN_message),
         ApiResponse(responseCode = OK_code, description = OK_message) ]
     )
     fun updateAccountInfo(@RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {

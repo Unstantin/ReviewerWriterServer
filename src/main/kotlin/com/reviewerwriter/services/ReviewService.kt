@@ -9,23 +9,22 @@ import com.reviewerwriter.dto.response.ReviewInfo
 import com.reviewerwriter.entities.FavoriteEntity
 import com.reviewerwriter.entities.LikeEntity
 import com.reviewerwriter.entities.ReviewEntity
-import com.reviewerwriter.repositories.AccountRepository
-import com.reviewerwriter.repositories.FavoriteRepository
-import com.reviewerwriter.repositories.LikeRepository
-import com.reviewerwriter.repositories.ReviewRepository
+import com.reviewerwriter.repositories.*
 import io.jsonwebtoken.Claims
+import org.springframework.data.domain.PageRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Field
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class ReviewService(
     val reviewRepository: ReviewRepository,
     val accountRepository: AccountRepository,
     val likeRepository: LikeRepository,
-    val favoriteRepository: FavoriteRepository
+    val favoriteRepository: FavoriteRepository,
+    val followRepository: FollowRepository
 ) {
     fun createReview(request: ReviewCreateRequest): Info {
         val info = Info()
@@ -43,7 +42,7 @@ class ReviewService(
                 title = request.title,
                 mainText = request.mainText,
                 shortText = request.shortText,
-                date = LocalDate.now(),
+                date = LocalDateTime.now(),
                 tags = request.tags
             )
             reviewRepository.save(review)
@@ -165,6 +164,49 @@ class ReviewService(
                     else { favoriteRepository.save(FavoriteEntity( account = account, review = review )) }
                 }
             }
+        }
+
+        return info
+    }
+
+    fun getFollowingReviews(page: Int): Info {
+        val info = Info()
+
+        val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
+        val accountOptional = accountRepository.findById(claims["accountId"] as Int)
+
+        if(!accountOptional.isPresent) {
+            info.errorInfo = ErrorMessages.TOKEN_ERROR
+        } else {
+            val account = accountOptional.get()
+
+            val followingAccounts = followRepository.findAllByFollowerId(account.id!!).stream().map { it.following }.toList()
+            val accountsReviews: ArrayList<ReviewEntity> = ArrayList()
+            followingAccounts.forEach {
+                accountsReviews.addAll(
+                    reviewRepository.findAllByAuthorIdAndDateGreaterThan(
+                        it?.id!!, pageable=PageRequest.of(page, 10)
+                    )
+                )
+            }
+            val sortedReviews = accountsReviews.stream().sorted(compareBy<ReviewEntity?> { it?.date }.reversed()).toList()
+            val accountsReviewsInfo = ArrayList<ReviewInfo>()
+            sortedReviews.forEach {
+                accountsReviewsInfo.add(
+                    ReviewInfo().apply {
+                        id = it.id
+                        title = it.title
+                        mainText = it.mainText
+                        shortText = it.shortText
+                        authorNickname = it.author.nickname
+                        date = it.date
+                        tags = it.tags
+                        likesN = likeRepository.findByReviewId(it.id!!).stream().count().toInt()
+                    }
+                )
+            }
+
+            info.response = accountsReviewsInfo
         }
 
         return info

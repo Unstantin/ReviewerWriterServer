@@ -2,6 +2,7 @@ package com.reviewerwriter.controllers
 
 import com.reviewerwriter.*
 import com.reviewerwriter.dto.requests.ActionToAnotherAccountReviewRequest
+import com.reviewerwriter.dto.requests.GetFollowingReviewsRequest
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
 import com.reviewerwriter.dto.response.ReviewCreateResponse
 import com.reviewerwriter.dto.response.ReviewInfo
@@ -38,6 +39,27 @@ class ReviewController(
     fun createReview(@RequestBody request: ReviewCreateRequest, servlet: HttpServletRequest): ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
         val result = reviewService.createReview(request)
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, request, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Получение рецензий от подписок")
+    @GetMapping("/following")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content( schema = Schema(implementation = ReviewCreateResponse::class)) ])
+    ])
+    fun getFollowingReviews(@RequestBody request: GetFollowingReviewsRequest, servlet: HttpServletRequest): ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = reviewService.getFollowingReviews(page=request.page)
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {

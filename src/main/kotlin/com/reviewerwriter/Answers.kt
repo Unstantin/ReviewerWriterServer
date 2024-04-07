@@ -15,6 +15,9 @@ const val ACCOUNT_NOT_FOUND_message = "Аккаунт не найден"
 const val USERNAME_IS_ALREADY_TAKEN_code = "400"
 const val USERNAME_IS_ALREADY_TAKEN_message = "Это имя пользователя уже занято"
 
+const val NICKNAME_IS_ALREADY_TAKEN_code = "400"
+const val NICKNAME_IS_ALREADY_TAKEN_message = "Этот никнейм уже занят"
+
 const val ERROR_CREATING_TOKEN_code = "400"
 const val ERROR_CREATING_TOKEN_message = "Ошибка создания токена"
 
