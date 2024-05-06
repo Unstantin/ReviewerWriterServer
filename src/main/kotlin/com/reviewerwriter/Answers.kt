@@ -26,3 +26,6 @@ const val ACCESS_IS_DENIED_message = "У Вас нет прав на это де
 
 const val ATTEMPT_FOLLOW_YOURSELF_code = "409"
 const val ATTEMPT_FOLLOW_YOURSELF_message = "Вы не можете подписаться на самого себя"
+
+const val REVIEW_COLLECTION_NOT_FOUND_code = "404"
+const val REVIEW_COLLECTION_NOT_FOUND_message = "Коллекция не найдена"

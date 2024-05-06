@@ -26,5 +26,9 @@ enum class ErrorMessages(var message: String, val code: Int) {
     ATTEMPT_FOLLOW_YOURSELF(
         ATTEMPT_FOLLOW_YOURSELF_message,
         ATTEMPT_FOLLOW_YOURSELF_code.toInt()
+    ),
+    REVIEW_COLLECTION_NOT_FOUND(
+        REVIEW_COLLECTION_NOT_FOUND_message,
+        REVIEW_COLLECTION_NOT_FOUND_code.toInt()
     )
 }
