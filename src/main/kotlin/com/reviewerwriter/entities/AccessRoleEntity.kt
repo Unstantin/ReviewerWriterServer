@@ -3,18 +3,17 @@ package com.reviewerwriter.entities
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "_likes")
-class LikeEntity(
+@Table(name = "_access_roles")
+class AccessRoleEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     var id: Int? = null,
 
-    @ManyToOne
-    @JoinColumn(name = "account")
-    var account: AccountEntity? = null,
+    @Column(name = "name")
+    var name: String,
 
     @ManyToOne
-    @JoinColumn(name = "review")
-    var review: ReviewEntity? = null
+    @JoinColumn(name = "owner")
+    var owner: AccountEntity
 )

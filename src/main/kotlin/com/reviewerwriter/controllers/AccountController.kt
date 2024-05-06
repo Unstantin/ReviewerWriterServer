@@ -1,7 +1,9 @@
 package com.reviewerwriter.controllers
 
 import com.reviewerwriter.*
+import com.reviewerwriter.actions.ActionToAnotherAccount
 import com.reviewerwriter.dto.requests.ActionToAnotherAccountRequest
+import com.reviewerwriter.dto.requests.GiveAccessRoleToAccountRequest
 import com.reviewerwriter.dto.response.AccountInfoPrivate
 import com.reviewerwriter.dto.response.AccountInfoPublic
 import com.reviewerwriter.dto.response.ReviewInfo
@@ -28,7 +30,11 @@ import java.time.LocalDateTime
 
 @Controller
 @RequestMapping("/v1/accounts")
-class AccountController(val accountService: AccountService, val jwtService: JwtService, val logService: LogService) {
+class AccountController(
+    val accountService: AccountService,
+    val jwtService: JwtService,
+    val logService: LogService
+) {
     @Operation(summary = "Получение приватной информации об аккаунте")
     @GetMapping
     @ApiResponses(value = [
@@ -57,9 +63,9 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         ApiResponse(responseCode = NICKNAME_IS_ALREADY_TAKEN_code, description = NICKNAME_IS_ALREADY_TAKEN_message),
         ApiResponse(responseCode = OK_code, description = OK_message) ]
     )
-    fun updateAccountInfo(@RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {
+    fun editAccountData(@RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
-        val result = accountService.updateAccountInfo(fields)
+        val result = accountService.editAccountData(fields)
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
         } else {
@@ -178,7 +184,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
     }
 
 
-    @Operation(summary = "Действие по отношению к другому аккаунту", description = "Поле action может принимать значения: TO_FOLLOW")
+    @Operation(summary = "Действие по отношению к другому аккаунту", description = "Поле action может принимать значения: TO_FOLLOW, TO_UNFOLLOW")
     @PostMapping("/{id}")
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
@@ -190,7 +196,8 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         val requestDateTime = LocalDateTime.now()
 
         val result = when(ActionToAnotherAccount.valueOf(request.action.uppercase())) {
-            ActionToAnotherAccount.TO_FOLLOW -> accountService.followToAccount(id)
+            ActionToAnotherAccount.TO_FOLLOW -> accountService.followToAccount(id, toFollow = true)
+            ActionToAnotherAccount.TO_UNFOLLOW -> accountService.followToAccount(id, toFollow = false)
         }
 
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
@@ -266,6 +273,30 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         }
 
         logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Выдача роли доступа аккаунта")
+    @PostMapping("/{id}/access-roles")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
+        ApiResponse(responseCode = ACCESS_IS_DENIED_code, description = ACCESS_IS_DENIED_message),
+        ApiResponse(responseCode = ATTEMPT_TO_GIVE_ACCESS_ROLE_YOURSELF_code, description = ATTEMPT_TO_GIVE_ACCESS_ROLE_YOURSELF_message),
+        ApiResponse(responseCode = ACCOUNT_NOT_FOUND_code, description = "$ACCOUNT_NOT_FOUND_message ИЛИ $ACCESS_ROLE_NOT_FOUND_message"),
+        ApiResponse(responseCode = OK_code, description = OK_message)
+    ])
+    fun giveAccessRoleToAccount(@PathVariable id: Int, @RequestBody request: GiveAccessRoleToAccountRequest, servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = accountService.giveAccessRoleToAccount(id, request.accessId, request.giveAccess)
+
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(result.errorInfo!!.code).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(OK_code.toInt()).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, request, response, jwtService.getUsernameFromToken(),
             method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
         return response
     }

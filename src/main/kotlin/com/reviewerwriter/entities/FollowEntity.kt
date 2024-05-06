@@ -3,7 +3,7 @@ package com.reviewerwriter.entities
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "followings")
+@Table(name = "_followings")
 class FollowEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -1,6 +1,7 @@
 package com.reviewerwriter.controllers
 
 import com.reviewerwriter.*
+import com.reviewerwriter.actions.ActionToAnotherAccountReview
 import com.reviewerwriter.dto.requests.ActionToAnotherAccountReviewRequest
 import com.reviewerwriter.dto.requests.GetFollowingReviewsRequest
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
@@ -100,9 +101,9 @@ class ReviewController(
         ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
         ApiResponse(responseCode = OK_code, description = OK_message)]
     )
-    fun updateReviewInfo(@PathVariable id: Int, @RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {
+    fun editReviewData(@PathVariable id: Int, @RequestBody fields: Map<String, Any>, servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
-        val result = reviewService.updateReviewInfo(id, fields)
+        val result = reviewService.editReviewData(id, fields)
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {
@@ -136,7 +137,7 @@ class ReviewController(
         return response
     }
 
-    @Operation(summary = "Действие по отношению к чужой рецензии", description = "Доступные значения поля action: TO_LIKE, TO_FAVORITE")
+    @Operation(summary = "Действие по отношению к чужой рецензии", description = "Доступные значения поля action: TO_LIKE, TO_UNLIKE, TO_FAVORITE, TO_REMOVE_FAVORITE")
     @PostMapping("/{id}")
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),

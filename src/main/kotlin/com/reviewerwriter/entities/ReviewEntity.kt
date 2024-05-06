@@ -9,7 +9,7 @@ import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "_reviews")
 class ReviewEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -26,7 +26,7 @@ class ReviewEntity(
     var mainText: String,
 
     @Column(name = "short_text")
-    var shortText: String = "",
+    var shortText: String,
 
     @Column(name = "date")
     var date: LocalDateTime,

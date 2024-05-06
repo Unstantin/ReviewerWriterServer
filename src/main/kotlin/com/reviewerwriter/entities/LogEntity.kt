@@ -7,7 +7,7 @@ import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 @Entity
-@Table(name="logs")
+@Table(name="_logs")
 class LogEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

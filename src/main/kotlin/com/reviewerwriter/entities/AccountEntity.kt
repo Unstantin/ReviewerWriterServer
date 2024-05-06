@@ -8,15 +8,15 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "_accounts")
 class AccountEntity (
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     var id: Int? = null,
 
-    @Column(name = "nickname", length = 15)
-    var nickname: String = "",
+    @Column(name = "nickname")
+    var nickname: String? = null,
 
     @Convert(converter = TagsConverter::class)
     @Column(columnDefinition = "jsonb")

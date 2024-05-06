@@ -2,6 +2,7 @@ package com.reviewerwriter
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.reviewerwriter.entities.ReviewCollectionEntity
 import com.reviewerwriter.models.Tag
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter

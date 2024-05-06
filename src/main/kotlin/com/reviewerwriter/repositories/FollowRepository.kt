@@ -7,7 +7,7 @@ import java.util.*
 interface FollowRepository : JpaRepository<FollowEntity, Int> {
     fun findAllByFollowingId(id: Int) : List<FollowEntity>
     fun findAllByFollowerId(id: Int): List<FollowEntity>
-
     fun findByFollowerIdAndFollowingId(followerId: Int, followingId: Int): Optional<FollowEntity>
-
+    fun countAllByFollowerId(followerId: Int): Int
+    fun countAllByFollowingId(followingId: Int): Int
 }

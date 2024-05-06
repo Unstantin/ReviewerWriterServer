@@ -41,7 +41,7 @@ class AuthService(
         )
         userRepository.save(user)
 
-        info.response = RegistrationInfo(user.account.id)
+        info.response = RegistrationInfo(user.account.id!!)
 
         return info
     }

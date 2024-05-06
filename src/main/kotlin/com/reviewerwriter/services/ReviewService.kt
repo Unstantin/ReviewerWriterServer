@@ -1,6 +1,6 @@
 package com.reviewerwriter.services
 
-import com.reviewerwriter.ActionToAnotherAccountReview
+import com.reviewerwriter.actions.ActionToAnotherAccountReview
 import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
 import com.reviewerwriter.dto.response.Info
@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Field
 import java.time.LocalDateTime
@@ -24,7 +25,8 @@ class ReviewService(
     val accountRepository: AccountRepository,
     val likeRepository: LikeRepository,
     val favoriteRepository: FavoriteRepository,
-    val followRepository: FollowRepository
+    val followRepository: FollowRepository,
+    val reviewCollectionRepository: ReviewCollectionRepository
 ) {
     fun createReview(request: ReviewCreateRequest): Info {
         val info = Info()
@@ -55,19 +57,19 @@ class ReviewService(
 
     fun getReviewInfoById(id: Int) : Info {
         val info = Info()
-        val reviewInfo = ReviewInfo()
 
         val reviewOptional = reviewRepository.findById(id)
         if(reviewOptional.isPresent) {
             val review = reviewOptional.get()
-            reviewInfo.id = review.id
-            reviewInfo.title = review.title
-            reviewInfo.authorNickname = review.author.nickname
-            reviewInfo.mainText = review.mainText
-            reviewInfo.shortText = review.shortText
-            reviewInfo.date = review.date
-            reviewInfo.tags = review.tags
-            reviewInfo.likesN = likeRepository.findByReviewId(review.id!!).stream().count().toInt()
+
+            val reviewInfo = ReviewInfo(
+                id = review.id!!, title = review.title,
+                authorNickname = review.author.nickname!!,
+                mainText = review.mainText,
+                shortText = review.shortText,
+                date = review.date, tags = review.tags,
+                likesN = likeRepository.countByReviewId(review.id!!)
+            )
 
             info.response = reviewInfo
         } else {
@@ -77,7 +79,7 @@ class ReviewService(
         return info
     }
 
-    fun updateReviewInfo(id: Int, fields: Map<String, Any>): Info {
+    fun editReviewData(id: Int, fields: Map<String, Any>): Info {
         val info = Info()
 
         val claims = SecurityContextHolder.getContext().authentication.credentials as Claims
@@ -111,6 +113,7 @@ class ReviewService(
         return info
     }
 
+    @Transactional
     fun deleteReview(id: Int): Info {
         val info = Info()
 
@@ -131,7 +134,12 @@ class ReviewService(
                 return info
             }
 
+            reviewCollectionRepository.findByReviewId(id).stream().forEach { println(it.id) }
+            favoriteRepository.deleteAllByReviewId(id)
+            likeRepository.deleteAllByReviewId(id)
             reviewRepository.deleteById(id)
+
+            //TODO УДАЛЯТЬ ИЗ КОЛЛЕКЦИЙ
         }
 
         return info
@@ -154,14 +162,18 @@ class ReviewService(
 
             when(action) {
                 ActionToAnotherAccountReview.TO_LIKE -> {
+                    likeRepository.save(LikeEntity( account = account, review = review ))
+                }
+                ActionToAnotherAccountReview.TO_UNLIKE -> {
                     val like = likeRepository.findByAccountIdAndReviewId(account.id!!, review.id!!)
-                    if(like.isPresent) { likeRepository.delete(like.get()) }
-                    else { likeRepository.save(LikeEntity( account = account, review = review )) }
+                    likeRepository.delete(like.get())
                 }
                 ActionToAnotherAccountReview.TO_FAVORITE -> {
+                    favoriteRepository.save(FavoriteEntity( account = account, review = review ))
+                }
+                ActionToAnotherAccountReview.TO_REMOVE_FAVORITE -> {
                     val favorite = favoriteRepository.findByAccountIdAndReviewId(account.id!!, review.id!!)
-                    if(favorite.isPresent) { favoriteRepository.delete(favorite.get()) }
-                    else { favoriteRepository.save(FavoriteEntity( account = account, review = review )) }
+                    favoriteRepository.delete(favorite.get())
                 }
             }
         }
@@ -193,16 +205,13 @@ class ReviewService(
             val accountsReviewsInfo = ArrayList<ReviewInfo>()
             sortedReviews.forEach {
                 accountsReviewsInfo.add(
-                    ReviewInfo().apply {
-                        id = it.id
-                        title = it.title
-                        mainText = it.mainText
-                        shortText = it.shortText
-                        authorNickname = it.author.nickname
-                        date = it.date
-                        tags = it.tags
-                        likesN = likeRepository.findByReviewId(it.id!!).stream().count().toInt()
-                    }
+                    ReviewInfo(
+                        id = it.id!!, title = it.title,
+                        mainText = it.mainText, shortText = it.shortText,
+                        authorNickname = it.author.nickname!!,
+                        date = it.date, tags = it.tags,
+                        likesN = likeRepository.countByReviewId(it.id!!)
+                    )
                 )
             }
 

@@ -6,7 +6,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 @Entity
-@Table(name = "users")
+@Table(name = "_users")
 class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
