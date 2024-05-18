@@ -8,7 +8,8 @@ class ReviewCollectionEntity(
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: Int? = null,
 
-    @Column(name = "owner")
+    @ManyToOne
+    @JoinColumn(name = "account_id")
     var owner: AccountEntity,
 
     @Column(name = "name")
