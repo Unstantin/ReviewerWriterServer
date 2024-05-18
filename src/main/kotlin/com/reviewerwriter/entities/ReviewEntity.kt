@@ -31,6 +31,9 @@ class ReviewEntity(
     @Column(name = "date")
     var date: LocalDateTime,
 
+    @Column(name = "photos")
+    var photos: ArrayList<String> = ArrayList(),
+
     @Convert(converter = TagsConverter::class)
     @Column(columnDefinition = "jsonb")
     @SerializedName("tags")

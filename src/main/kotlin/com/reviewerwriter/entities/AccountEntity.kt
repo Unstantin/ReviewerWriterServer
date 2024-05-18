@@ -18,6 +18,9 @@ class AccountEntity (
     @Column(name = "nickname", length = 15)
     var nickname: String = "",
 
+    @Column(name = "profile_photo")
+    var profilePhoto: String = "",
+
     @Convert(converter = TagsConverter::class)
     @Column(columnDefinition = "jsonb")
     @SerializedName("tags")

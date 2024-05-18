@@ -29,3 +29,9 @@ const val ATTEMPT_FOLLOW_YOURSELF_message = "Вы не можете подпис
 
 const val REVIEW_COLLECTION_NOT_FOUND_code = "404"
 const val REVIEW_COLLECTION_NOT_FOUND_message = "Коллекция не найдена"
+
+const val FILE_IS_EMPTY_code = "400"
+const val FILE_IS_EMPTY_message = "Загружаемый файл пуст"
+
+const val ERROR_READING_FILE_code = "500"
+const val ERROR_READING_FILE_message = "Ошибка загрузки изображения"

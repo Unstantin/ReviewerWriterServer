@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.util.ReflectionUtils
+import java.io.File
 import java.lang.reflect.Field
 import java.time.LocalDateTime
 
@@ -130,6 +131,8 @@ class ReviewService(
                 info.errorInfo = ErrorMessages.ACCESS_IS_DENIED
                 return info
             }
+            //TODO РАСКОМЕНТИТЬ
+            //review.photos.forEach { File(it).delete() }
 
             reviewRepository.deleteById(id)
         }

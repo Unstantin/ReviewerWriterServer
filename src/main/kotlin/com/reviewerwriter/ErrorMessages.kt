@@ -30,5 +30,14 @@ enum class ErrorMessages(var message: String, val code: Int) {
     REVIEW_COLLECTION_NOT_FOUND(
         REVIEW_COLLECTION_NOT_FOUND_message,
         REVIEW_COLLECTION_NOT_FOUND_code.toInt()
-    )
+    ),
+    FILE_IS_EMPTY(
+        FILE_IS_EMPTY_message,
+        FILE_IS_EMPTY_code.toInt()
+    ),
+    ERROR_READING_FILE(
+        ERROR_READING_FILE_message,
+        ERROR_READING_FILE_code.toInt()
+    );
+
 }

@@ -50,7 +50,7 @@ class AccountController(val accountService: AccountService, val jwtService: JwtS
         return response
     }
 
-    @Operation(summary = "Редактирование информации об аккаунте", description = "Доступные поля: nickname, tags")
+    @Operation(summary = "Редактирование информации об аккаунте", description = "Доступные поля: nickname, tags, profile_photo")
     @PatchMapping
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),

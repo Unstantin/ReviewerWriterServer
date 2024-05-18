@@ -23,7 +23,7 @@ class UserEntity(
     var account: AccountEntity
 ) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        //TODO ЗАГЛУШКА ДЛЯ РОЛЕЙ ХЗ ДЕЛАТЬ ИЛИ НЕТ Я ЕБАЛ ЭТО ГАВНО )))
+        //TODO ЗАГЛУШКА ДЛЯ РОЛЕЙ
         return MutableList(1) { a: Int -> SimpleGrantedAuthority("USER$a") }
     }
 
