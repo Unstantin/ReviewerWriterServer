@@ -11,5 +11,6 @@ class ReviewInfo(
     var authorNickname: String? = null,
     var date: LocalDateTime? = null,
     var tags: ArrayList<Tag>? = null,
-    var likesN: Int? = null
+    var likesN: Int? = null,
+    var photos: ArrayList<String>? = null
 )

@@ -25,7 +25,7 @@ import java.net.URL
 import java.time.LocalDateTime
 
 @Controller
-@RequestMapping("/photos")
+@RequestMapping("v1/photos")
 class PhotoController(
     val storageService: FileSystemStorageService,
     val logService: LogService,
@@ -36,7 +36,7 @@ class PhotoController(
     @ApiResponses(value = [
         ApiResponse(responseCode = FILE_IS_EMPTY_code, description = FILE_IS_EMPTY_message),
         ApiResponse(responseCode = OK_code, description = OK_message, content = [
-            Content(schema = Schema(implementation = PhotoUploadResponse::class))
+            Content(schema = Schema(implementation = String::class))
         ])
     ])
     fun uploadPhoto(@RequestParam("file") file: MultipartFile, servlet: HttpServletRequest) : ResponseEntity<Any> {
@@ -45,7 +45,7 @@ class PhotoController(
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {
-            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(OK_message)
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
         }
 
         logService.createLog(requestDateTime=requestDateTime, file, response, jwtService.getUsernameFromToken(),
@@ -58,7 +58,7 @@ class PhotoController(
     @ApiResponses(value = [
         ApiResponse(responseCode = ERROR_READING_FILE_code, description = ERROR_CREATING_TOKEN_message),
         ApiResponse(responseCode = OK_code, description = OK_message, content = [
-            Content(schema = Schema(implementation = UrlResource::class))
+            Content(schema = Schema(implementation = ByteArray::class))
         ])
     ])
     fun loadPhoto(@PathVariable filename: String, servlet: HttpServletRequest) : ResponseEntity<Any> {
@@ -67,7 +67,7 @@ class PhotoController(
         val response: ResponseEntity<Any> = if(result.errorInfo != null) {
             ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
         } else {
-            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(OK_message)
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
         }
 
         logService.createLog(requestDateTime=requestDateTime, filename, response, jwtService.getUsernameFromToken(),

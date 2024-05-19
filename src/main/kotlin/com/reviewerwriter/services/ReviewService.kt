@@ -44,7 +44,8 @@ class ReviewService(
                 mainText = request.mainText,
                 shortText = request.shortText,
                 date = LocalDateTime.now(),
-                tags = request.tags
+                tags = request.tags,
+                photos = request.photos
             )
             reviewRepository.save(review)
 
@@ -69,6 +70,7 @@ class ReviewService(
             reviewInfo.date = review.date
             reviewInfo.tags = review.tags
             reviewInfo.likesN = likeRepository.findByReviewId(review.id!!).stream().count().toInt()
+            reviewInfo.photos = review.photos
 
             info.response = reviewInfo
         } else {
@@ -131,8 +133,8 @@ class ReviewService(
                 info.errorInfo = ErrorMessages.ACCESS_IS_DENIED
                 return info
             }
-            //TODO РАСКОМЕНТИТЬ
-            //review.photos.forEach { File(it).delete() }
+
+            review.photos.forEach { File(it).delete() }
 
             reviewRepository.deleteById(id)
         }

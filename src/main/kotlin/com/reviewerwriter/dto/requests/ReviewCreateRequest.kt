@@ -6,6 +6,6 @@ data class ReviewCreateRequest(
     val title: String,
     val mainText: String,
     val shortText: String,
-    val tags: ArrayList<Tag>
-) {
-}
+    val tags: ArrayList<Tag>,
+    val photos: ArrayList<String>
+)
