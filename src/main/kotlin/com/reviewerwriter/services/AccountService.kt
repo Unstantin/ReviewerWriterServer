@@ -55,15 +55,23 @@ class AccountService(
             val account = accountOptional.get()
 
             fields.forEach { (key, value) ->
-                if(key == "nickname" && accountRepository.findByNickname(value.toString()).isEmpty) {
+                if(key == "nickname") {
+                    if (accountRepository.findByNickname(value.toString()).isEmpty) {
+                        run {
+                            val field: Field = ReflectionUtils.findField(AccountEntity::class.java, key)!!
+                            field.trySetAccessible()
+                            ReflectionUtils.setField(field, account, value)
+                        }
+                    } else {
+                        info.errorInfo = ErrorMessages.NICKNAME_IS_ALREADY_TAKEN
+                        return info
+                    }
+                } else {
                     run {
                         val field: Field = ReflectionUtils.findField(AccountEntity::class.java, key)!!
                         field.trySetAccessible()
                         ReflectionUtils.setField(field, account, value)
                     }
-                } else {
-                    info.errorInfo = ErrorMessages.NICKNAME_IS_ALREADY_TAKEN
-                    return info
                 }
             }
 

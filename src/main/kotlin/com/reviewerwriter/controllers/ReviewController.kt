@@ -6,10 +6,12 @@ import com.reviewerwriter.dto.requests.GetFollowingReviewsRequest
 import com.reviewerwriter.dto.requests.ReviewCreateRequest
 import com.reviewerwriter.dto.response.ReviewCreateResponse
 import com.reviewerwriter.dto.response.ReviewInfo
+import com.reviewerwriter.dto.response.ReviewInfoShort
 import com.reviewerwriter.services.JwtService
 import com.reviewerwriter.services.LogService
 import com.reviewerwriter.services.ReviewService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -141,8 +143,8 @@ class ReviewController(
     @ApiResponses(value = [
         ApiResponse(responseCode = TOKEN_ERROR_code, description = TOKEN_ERROR_message),
         ApiResponse(responseCode = REVIEW_NOT_FOUND_code, description = REVIEW_NOT_FOUND_message),
-        ApiResponse(responseCode = OK_code, description = OK_message)]
-    )
+        ApiResponse(responseCode = OK_code, description = OK_message, content = [ Content( schema = Schema(implementation = ReviewInfo::class)) ] )
+    ])
     fun actionToAnotherAccountReview(@PathVariable id: Int, @RequestBody request: ActionToAnotherAccountReviewRequest,
                                         servlet: HttpServletRequest) : ResponseEntity<Any> {
         val requestDateTime = LocalDateTime.now()
@@ -154,6 +156,26 @@ class ReviewController(
         }
 
         logService.createLog(requestDateTime=requestDateTime, request, response, jwtService.getUsernameFromToken(),
+            method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
+        return response
+    }
+
+    @Operation(summary = "Получение всех существующих рецензий")
+    @GetMapping("/all")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = OK_code, description = OK_message,
+            content = [ Content(array = ArraySchema(schema = Schema(implementation = ReviewInfoShort::class))) ])
+    ])
+    fun getAllReviews(servlet: HttpServletRequest) : ResponseEntity<Any> {
+        val requestDateTime = LocalDateTime.now()
+        val result = reviewService.getAllReviews()
+        val response: ResponseEntity<Any> = if(result.errorInfo != null) {
+            ResponseEntity.status(HttpStatusCode.valueOf(result.errorInfo!!.code)).body(result.errorInfo)
+        } else {
+            ResponseEntity.status(HttpStatusCode.valueOf(OK_code.toInt())).body(result.response)
+        }
+
+        logService.createLog(requestDateTime=requestDateTime, null, response, jwtService.getUsernameFromToken(),
             method=servlet.method, endpoint = URL(servlet.requestURL.toString()).path)
         return response
     }

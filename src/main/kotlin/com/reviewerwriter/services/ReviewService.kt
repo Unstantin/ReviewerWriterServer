@@ -216,4 +216,24 @@ class ReviewService(
 
         return info
     }
+
+    fun getAllReviews(): Info {
+        val info = Info()
+        val reviews = reviewRepository.findAll()
+        val reviewsInfoArray = ArrayList<ReviewInfo>()
+        reviews.forEach {
+            reviewsInfoArray.add(
+                ReviewInfo(
+                    id = it.id,
+                    title = it.title,
+                    shortText = it.shortText,
+                    authorNickname = it.author.nickname,
+                    photos = it.photos
+                )
+            )
+        }
+
+        info.response = reviewsInfoArray
+        return info
+    }
 }

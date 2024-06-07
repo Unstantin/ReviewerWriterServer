@@ -3,12 +3,9 @@ package com.reviewerwriter.services
 import com.reviewerwriter.ErrorMessages
 import com.reviewerwriter.dto.response.Info
 import com.reviewerwriter.dto.response.PhotoUploadResponse
-import org.springframework.core.io.InputStreamResource
-import org.springframework.core.io.UrlResource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
-import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -18,7 +15,7 @@ import java.util.*
 
 @Service
 class FileSystemStorageService {
-    private var rootLocation: Path = Paths.get("C:\\Users\\KONSTANTIN\\Desktop\\reviewerWriterPhotos")
+    private var rootLocation: Path = Paths.get("reviewerWriterPhotos")
 
     fun store(file: MultipartFile): Info {
         val info = Info()
@@ -47,7 +44,7 @@ class FileSystemStorageService {
     fun loadAsResource(filename: String): Info {
         val info = Info()
 
-        val file = File("C:\\Users\\KONSTANTIN\\Desktop\\reviewerWriterPhotos\\$filename")
+        val file = File("reviewerWriterPhotos\\$filename")
         info.response = file.readBytes()
         return info
     }
